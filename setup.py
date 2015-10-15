@@ -13,9 +13,6 @@ requires = {
     'global': [
         'pystatsd',
     ],
-    'setup': [
-        'nose>=1.0'
-    ],
     'tests': [
         'pytest',
         'mock',
