@@ -12,6 +12,7 @@ VERSION = '0.0.0'
 requires = {
     'global': [
         'pystatsd',
+        'boto3',
     ],
     'tests': [
         'pytest',
