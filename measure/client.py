@@ -61,50 +61,39 @@ class PyStatsdClient(BaseClient):
 
 
 class Boto3Client(BaseClient):
-    class Client(BaseClient):
-        def __init__(self):
-            self._client = boto3.client('cloudwatch')
-
-        def split_prefix_name(self, prefix_name):
-            parts = prefix_name.split('.')
-            prefix = parts[:-1]
-            name = parts[-1:]
-            return prefix, name
-
-        def submit_metric(self, namespace, metric_name, value, unit='None'):
-            self._client.put_metric_data(
-                Namespace=namespace,
-                MetricData=[
-                    {
-                        'MetricName': metric_name,
-                        'Value': value,
-                        'Unit': unit
-                    }
-                ]
-            )
-
-        def timing(self, prefix_name, value, sample_rate=None):
-            namespace, metric_name = self.split_prefix_name(prefix_name)
-            self.submit_metric(namespace, metric_name, value, unit='Seconds')
-
-        def update_stat(self, prefix_name, value, sample_rate=None):
-            namespace, metric_name = self.split_prefix_name(prefix_name)
-            self.submit_metric(namespace, metric_name, value, unit='None')
-
-        def guage(self, prefix_name, value, sample_rate=None):
-            namespace, metric_name = self.split_prefix_name(prefix_name)
-            self.submit_metric(namespace, metric_name, value, unit='None')
-
-        def send(self, prefix_name, value, sample_rate=None):
-            namespace, metric_name = self.split_prefix_name(prefix_name)
-            self.submit_metric(namespace, metric_name, value, unit='None')
-
-    client_class = boto3_Client
-
-    TIMING = 'timing'
-    UPDATE_STAT = 'update_stat'
-    GAUGE = 'gauge'
-    SEND = 'send'
-
     def __init__(self):
-        self.client = self.Client()
+        self.client = boto3.client('cloudwatch')
+
+    def split_prefix_name(self, prefix_name):
+        parts = prefix_name.split('.')
+        prefix = parts[:-1]
+        name = parts[-1:]
+        return prefix, name
+
+    def submit_metric(self, namespace, metric_name, value, unit='None'):
+        self._client.put_metric_data(
+            Namespace=namespace,
+            MetricData=[
+                {
+                    'MetricName': metric_name,
+                    'Value': value,
+                    'Unit': unit
+                }
+            ]
+        )
+
+    def timing(self, prefix_name, value, sample_rate=None):
+        namespace, metric_name = self.split_prefix_name(prefix_name)
+        self.submit_metric(namespace, metric_name, value, unit='Seconds')
+
+    def update_stat(self, prefix_name, value, sample_rate=None):
+        namespace, metric_name = self.split_prefix_name(prefix_name)
+        self.submit_metric(namespace, metric_name, value, unit='None')
+
+    def guage(self, prefix_name, value, sample_rate=None):
+        namespace, metric_name = self.split_prefix_name(prefix_name)
+        self.submit_metric(namespace, metric_name, value, unit='None')
+
+    def send(self, prefix_name, value, sample_rate=None):
+        namespace, metric_name = self.split_prefix_name(prefix_name)
+        self.submit_metric(namespace, metric_name, value, unit='None')
