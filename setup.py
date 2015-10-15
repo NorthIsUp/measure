@@ -5,6 +5,7 @@ from setuptools import (
     setup,
 )
 
+
 PACKAGE_NAME = 'measure'
 VERSION = '0.0.0'
 
@@ -16,13 +17,12 @@ requires = {
         'nose>=1.0'
     ],
     'tests': [
-        'exam',
+        'pytest',
         'mock',
     ],
 }
 
 requires['all'] = list(set(chain.from_iterable(requires.values()))),
-
 
 setup(
     author='adam hitchcock',
