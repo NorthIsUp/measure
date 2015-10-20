@@ -100,16 +100,20 @@ class Boto3Client(BaseClient):
 
     def timing(self, prefix_name, value, sample_rate=None):
         namespace, metric_name = self.split_prefix_name(prefix_name)
-        self.submit_metric(namespace, metric_name, value, unit='Seconds')
+        self.submit_metric(namespace[0], metric_name[0], value, unit='Seconds')
 
     def update_stat(self, prefix_name, value, sample_rate=None):
         namespace, metric_name = self.split_prefix_name(prefix_name)
-        self.submit_metric(namespace, metric_name, value, unit='None')
+        self.submit_metric(namespace[0], metric_name[0], value, unit='None')
 
     def guage(self, prefix_name, value, sample_rate=None):
         namespace, metric_name = self.split_prefix_name(prefix_name)
-        self.submit_metric(namespace, metric_name, value, unit='None')
+        self.submit_metric(namespace[0], metric_name[0], value, unit='None')
 
     def send(self, prefix_name, value, sample_rate=None):
         namespace, metric_name = self.split_prefix_name(prefix_name)
-        self.submit_metric(namespace, metric_name, value, unit='None')
+        self.submit_metric(namespace[0], metric_name[0], value, unit='None')
+
+    def mark(self, prefix_name, value, sample_rate=None):
+        namespace, metric_name = self.split_prefix_name(prefix_name)
+        self.submit_metric(namespace[0], metric_name[0], value, unit='None')
