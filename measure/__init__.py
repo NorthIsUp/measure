@@ -17,3 +17,8 @@ from .stats import (
     Timer,
     TimerDict,
 )
+
+from .client import (
+    PyStatsdClient,
+    Boto3Client
+)

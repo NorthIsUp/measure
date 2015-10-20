@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import
 
+from os import environ
 
 try:
     from pystatsd import Client as pystatsd_Client
@@ -61,8 +62,23 @@ class PyStatsdClient(BaseClient):
 
 
 class Boto3Client(BaseClient):
-    def __init__(self):
-        self.client = boto3.client('cloudwatch')
+    def __init__(self,
+                 aws_access_key_id=None,
+                 aws_secret_access_key=None,
+                 region_name=None):
+        if not any([aws_access_key_id, aws_secret_access_key]):
+            try:
+                aws_access_key_id = environ['AWS_ACCESS_KEY_ID']
+                aws_secret_access_key = environ['AWS_SECRET_ACCESS_KEY']
+            except KeyError:
+                raise Exception("You must provide AWS keys either in Env or App")
+
+        region_name = region_name or environ.get('AWS_DEFAULT_REGION', None) or 'us-east-1'
+
+        session = boto3.Session(aws_access_key_id=aws_access_key_id,
+                                aws_secret_access_key=aws_secret_access_key,
+                                region_name=region_name)
+        self.client = session.client('cloudwatch')
 
     def split_prefix_name(self, prefix_name):
         parts = prefix_name.split('.')
@@ -71,7 +87,7 @@ class Boto3Client(BaseClient):
         return prefix, name
 
     def submit_metric(self, namespace, metric_name, value, unit='None'):
-        self._client.put_metric_data(
+        self.client.put_metric_data(
             Namespace=namespace,
             MetricData=[
                 {
