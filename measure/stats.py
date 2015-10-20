@@ -71,7 +71,6 @@ class Stat(object):
         """
         func = getattr(self.client, self._function, None)
         if func:
-            print "function found, proceeding"
             func(self.prefix_name, value, sample_rate=self.sample_rate)
         else:
             logger.error('stat %s does not have function %s', self.prefix_name, self._function)

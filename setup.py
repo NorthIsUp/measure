@@ -14,9 +14,6 @@ requires = {
         'pystatsd',
         'boto3',
     ],
-    'setup': [
-        'nose>=1.0'
-    ],
     'tests': [
         'pytest',
         'mock',
