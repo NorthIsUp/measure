@@ -215,6 +215,7 @@ class Meter(Counter):
     A positive counter that directly represents a rate.
     """
 
+    _function = 'mark'
     _alias = 'mark'
 
     def mark(self, n=1):
