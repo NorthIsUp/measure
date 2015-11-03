@@ -86,9 +86,9 @@ class Boto3Client(BaseClient):
 
     def split_prefix_name(self, prefix_name):
         parts = prefix_name.split('.')
-        prefix = parts[:-1][0]
+        prefix = parts[:-1]
         name = parts[-1:][0]
-        return prefix, name
+        return ".".join(prefix), name
 
     def submit_metric(self, namespace, metric_name, value, unit='None'):
         self.client.put_metric_data(

@@ -15,8 +15,8 @@ requires = {
         'boto3',
     ],
     'tests': [
-        'pytest',
         'mock',
+        'pytest',
     ],
 }
 
