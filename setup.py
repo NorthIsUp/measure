@@ -18,6 +18,10 @@ requires = {
         'mock',
         'pytest',
     ],
+    'develop': [
+        'flake8',
+        'autopep8',
+    ]
 }
 
 

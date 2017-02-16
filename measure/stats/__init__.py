@@ -1,0 +1,55 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import absolute_import
+
+# Standard Library
+import logging
+
+from .counter import (
+    Counter,
+    CounterDict,
+)
+from .gauge import (
+    Gauge,
+    GaugeDict,
+)
+from .meter import (
+    Meter,
+    MeterDict,
+)
+from .stat import (
+    Stat,
+    StatDict,
+    Stats,
+)
+from .timer import (
+    Timer,
+    TimerDict,
+)
+
+logger = logging.getLogger(__name__)
+
+
+
+class FakeStat(Timer, Meter, Counter, Gauge, TimerDict, CounterDict, GaugeDict):
+    # Meter must precede Counter for the MRO to resolve
+
+    def apply(self, *args, **kwargs):
+        logger.error('stat <%s> does not exist', self.prefix_name)
+
+    def __missing__(self, key):
+        return FakeStat(
+            '{0}.{1}'.format(self.name, key),
+            self.__doc__,
+            prefix=self.prefix,
+            sample_rate=self.sample_rate,
+        )
+
+    def decrement(self, *args, **kwargs):
+        """
+        override the meter decrement.
+        """
+        self.apply(*args, **kwargs)
+
+
+FakeStatDict = FakeStat
