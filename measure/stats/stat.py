@@ -66,6 +66,7 @@ class Stat(object):
         Apply a statsd function to a value
         """
         func = getattr(self.client, self._function, None)
+
         if func:
             func(self.prefix_name, value, sample_rate=self.sample_rate)
         else:
@@ -160,7 +161,7 @@ class DjangoStats(Stats):
                 host = kwargs.get('host') or settings.STATSD_HOST
                 port = kwargs.get('port') or settings.STATSD_PORT
 
-                client_class = self.import_class(settings.STATS_CLIENT)
+                client_class = self.import_class(settings.STATSD_CLIENT)
                 return client_class(host, port)
 
             kwargs.update('client', SimpleLazyObject(get_client))

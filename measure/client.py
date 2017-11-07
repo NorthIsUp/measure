@@ -112,7 +112,7 @@ class Boto3Client(BaseClient):
 
     def guage(self, prefix_name, value, sample_rate=None):
         namespace, metric_name = self.split_prefix_name(prefix_name)
-        self.submit_metric(namespace, metric_nam, value, unit='None')
+        self.submit_metric(namespace, metric_name, value, unit='None')
 
     def send(self, prefix_name, value, sample_rate=None):
         namespace, metric_name = self.split_prefix_name(prefix_name)

@@ -10,15 +10,10 @@ class Meter(Counter):
     A positive counter that directly represents a rate.
     """
 
-    _function = 'mark'
-    _alias = 'mark'
-
     def mark(self, n=1):
         """
         stat.mark()
         """
-        if n < 0:
-            self.decrement(n)
         self.increment(n)
 
     def decrement(self, n=None):

@@ -30,7 +30,6 @@ from .timer import (
 logger = logging.getLogger(__name__)
 
 
-
 class FakeStat(Timer, Meter, Counter, Gauge, TimerDict, CounterDict, GaugeDict):
     # Meter must precede Counter for the MRO to resolve
 
