@@ -20,7 +20,8 @@ stat = measure.stats.Stats(
 stat.pageviews.mark()
 ```
 
-##Concepts
+## Concepts
+
 **#TODO define each of these and their usage / verb|function**
 
 - `Timer`
