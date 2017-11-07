@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/NorthIsUp/measure.svg)](https://travis-ci.org/NorthIsUp/measure)
+[![PyPI](https://img.shields.io/pypi/v/measure.svg)]()
 
 #Measure
 ![Image of Vernier](https://1o411sciportfolio.files.wordpress.com/2011/09/vernier-caliper-use.jpg)
