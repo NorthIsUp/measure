@@ -1,8 +1,14 @@
+
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
 # Standard Library
 from logging import getLogger
+
+# External Libraries
+from measure import FakeStat
+from measure.client.base import BaseClient
+
 
 logger = getLogger(__name__)
 
@@ -117,12 +123,15 @@ class Stats(object):
 
     """
 
-    def __init__(self, prefix, *stats, **kwargs):
+    def __init__(self, prefix, client=None, *stats, **kwargs):
 
         if not isinstance(prefix, basestring):
             raise TypeError("first argument must be a prefix string")
 
-        self.client = kwargs.get('client')
+        if not isinstance(client, BaseClient):
+            raise TypeError('the cliente should be an instance of BaseClient')
+
+        self.client = client
         self.prefix = prefix or ''
         self.stats = stats
 
@@ -146,7 +155,7 @@ class DjangoStats(Stats):
         """
         Sublcass of Stats that will read django settings for host, port, and class info.
 
-            STATSD_CLIENT classpath to the client to use,
+            STATS_CLIENT classpath to the client to use,
                 useful for setting a different client in tests
             STATSD_HOST the host for the client to connect to
             STATSD_PORT the port for the client to connect to
@@ -161,10 +170,10 @@ class DjangoStats(Stats):
                 host = kwargs.get('host') or settings.STATSD_HOST
                 port = kwargs.get('port') or settings.STATSD_PORT
 
-                client_class = self.import_class(settings.STATSD_CLIENT)
+                client_class = self.import_class(settings.STATS_CLIENT)
                 return client_class(host, port)
 
-            kwargs.update('client', SimpleLazyObject(get_client))
+            kwargs['client'] = SimpleLazyObject(get_client)
 
         super(DjangoStats, self).__init__(prefix, *args, **kwargs)
 
