@@ -6,6 +6,8 @@ from contextlib import contextmanager
 
 
 # Project Library
+from functools import partial
+
 from measure import (
     Counter,
     CounterDict,
@@ -49,7 +51,7 @@ class StatMixin(ClientTest):
 
     @property
     def expected_stat_name(self):
-        return '.'.join([k for k in (self.stat_name, str(self.stat_dict_key)) if k])
+        return '.'.join(k for k in (self.stat_name, str(self.stat_dict_key)) if k)
 
     def assertMockCalledWith(self, mock, *values, **kwvalues):
         mock.assert_called_with(*values, **kwvalues)
@@ -94,9 +96,28 @@ class StatMixinDict(StatMixin):
     stat_class = StatDict
     stat_dict_key = 200
 
-    @pytest.fixture
-    def statdict(self):
-        return self.stat_class(self.stat_name, 'testing this stat', sample_rate=self.sample_rate)
+    @pytest.fixture(params=['default', 'key_func', 'key_format'])
+    def statdict(self, request):
+        key_type = request.param
+        statdict = partial(self.stat_class, self.stat_name, 'testing this stat', sample_rate=self.sample_rate)
+
+        if key_type == 'default':
+            # normal case
+            statdict = statdict()
+
+        elif key_type == 'key_func':
+            # a custom key function is specified
+            def key_func(statdict_name, key):
+                return 'key_func.{0}.{1}'.format(statdict_name, key)
+
+            statdict = statdict(key_func=key_func)
+        elif key_type == 'key_format':
+            # a custom key format is specified
+            statdict = statdict(key_format='key_foramt.{0}.{1}')
+
+        self.expected_stat_name = statdict.key_func(self.stat_name, self.stat_dict_key)
+
+        return statdict
 
     @pytest.fixture
     def stat(self, statdict, client):
@@ -104,6 +125,10 @@ class StatMixinDict(StatMixin):
         stat.set_client(client)
         return stat
 
+    def test_key_func_and_key_format(self, statdict):
+        # tests both key_func and key_format attributes, key_format is tested via key_func based on statdict parameter
+        stat = statdict['hi']
+        assert stat.name == statdict.key_func(statdict.name, 'hi')
 
 class TestCounterStat(StatMixin):
     stat_class = Counter

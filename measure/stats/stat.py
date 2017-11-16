@@ -6,7 +6,6 @@ from __future__ import absolute_import
 from logging import getLogger
 
 # External Libraries
-from measure import FakeStat
 from measure.client.base import BaseClient
 
 
@@ -86,12 +85,24 @@ class StatDict(Stat, dict):
     _stat_class = Stat
 
     def __init__(self, *args, **kwargs):
+        """
+        Args:
+            key_format (str):
+                Format to use for naming the substats, by default this is just `{0}.{1}`.
+                It could be very useful to pass in `{1}.{0}` depending on how you want to organize your stats
+            key_func (callable->str):
+                Function called to get the name for substats. Default value is `self.key_format.format`.
+                The function is called with `key_func(statdict_name, key)`
+        """
         super(StatDict, self).__init__(*args, **kwargs)
-        self.data = {}
+
+        self.key_format = kwargs.pop('key_format', '{0}.{1}')
+        self.key_func = kwargs.pop('key_func', self.key_format.format)
 
     def __missing__(self, key):
+
         default = self._stat_class(
-            '{0}.{1}'.format(self.name, key),
+            self.key_func(self.name, key),
             self.__doc__,
             prefix=self.prefix,
             client=self.client,
@@ -147,6 +158,7 @@ class Stats(object):
         return getattr(self, key)
 
     def __getattr__(self, key):
+        from measure.stats import FakeStat
         return FakeStat(key, 'the best laid plans often go astray', prefix=self.prefix)
 
 

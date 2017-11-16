@@ -36,13 +36,6 @@ class FakeStat(Timer, Meter, Counter, Gauge, TimerDict, CounterDict, GaugeDict):
     def apply(self, *args, **kwargs):
         logger.error('stat <%s> does not exist', self.prefix_name)
 
-    def __missing__(self, key):
-        return FakeStat(
-            '{0}.{1}'.format(self.name, key),
-            self.__doc__,
-            prefix=self.prefix,
-            sample_rate=self.sample_rate,
-        )
 
     def decrement(self, *args, **kwargs):
         """
