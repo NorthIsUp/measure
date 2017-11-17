@@ -7,7 +7,7 @@ from setuptools.command.test import test as TestCommand
 
 
 PACKAGE_NAME = 'measure'
-VERSION = '0.3.1'
+VERSION = '0.3.2'
 
 requires = {
     'global': [
@@ -17,6 +17,7 @@ requires = {
     'tests': [
         'mock',
         'pytest',
+        'django',
     ],
     'develop': [
         'flake8',

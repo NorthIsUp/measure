@@ -178,16 +178,12 @@ class DjangoStats(Stats):
 
         if not _client:
             from django.conf import settings
-            from django.utils.functional import SimpleLazyObject
 
-            def get_client():
-                host = kwargs.get('host') or settings.STATSD_HOST
-                port = kwargs.get('port') or settings.STATSD_PORT
+            host = kwargs.get('host') or settings.STATSD_HOST
+            port = kwargs.get('port') or settings.STATSD_PORT
 
-                client_class = self.import_class(settings.STATS_CLIENT)
-                return client_class(host, port)
-
-            kwargs['client'] = SimpleLazyObject(get_client)
+            client_class = self.import_class(settings.STATS_CLIENT)
+            kwargs['client'] = client_class(host, port)
 
         super(DjangoStats, self).__init__(prefix, *args, **kwargs)
 
