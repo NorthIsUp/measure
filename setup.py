@@ -7,7 +7,7 @@ from setuptools.command.test import test as TestCommand
 
 
 PACKAGE_NAME = 'measure'
-VERSION = '0.3.0'
+VERSION = '0.3.1'
 
 requires = {
     'global': [

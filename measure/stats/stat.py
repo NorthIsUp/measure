@@ -134,13 +134,15 @@ class Stats(object):
 
     """
 
-    def __init__(self, prefix, client=None, *stats, **kwargs):
+    def __init__(self, prefix, *stats, **kwargs):
+
+        client = kwargs.pop('client', None)
 
         if not isinstance(prefix, basestring):
             raise TypeError("first argument must be a prefix string")
 
         if not isinstance(client, BaseClient):
-            raise TypeError('the cliente should be an instance of BaseClient')
+            raise TypeError('the client should be an instance of BaseClient')
 
         self.client = client
         self.prefix = prefix or ''
