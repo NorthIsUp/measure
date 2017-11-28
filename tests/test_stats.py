@@ -107,15 +107,15 @@ class StatMixinDict(StatMixin):
 
         elif key_type == 'key_func':
             # a custom key function is specified
-            def key_func(statdict_name, key):
-                return 'key_func.{0}.{1}'.format(statdict_name, key)
+            def key_func(name, key):
+                return 'key_func.{name}.{key}'.format(name=name, key=key)
 
             statdict = statdict(key_func=key_func)
         elif key_type == 'key_format':
             # a custom key format is specified
-            statdict = statdict(key_format='key_foramt.{0}.{1}')
+            statdict = statdict(key_format='key_foramt.{name}.{key}')
 
-        self.expected_stat_name = statdict.key_func(self.stat_name, self.stat_dict_key)
+        self.expected_stat_name = statdict.key_func(name=self.stat_name, key=self.stat_dict_key)
 
         return statdict
 
@@ -128,7 +128,8 @@ class StatMixinDict(StatMixin):
     def test_key_func_and_key_format(self, statdict):
         # tests both key_func and key_format attributes, key_format is tested via key_func based on statdict parameter
         stat = statdict['hi']
-        assert stat.name == statdict.key_func(statdict.name, 'hi')
+        assert stat.name == statdict.key_func(name=statdict.name, key='hi')
+
 
 class TestCounterStat(StatMixin):
     stat_class = Counter

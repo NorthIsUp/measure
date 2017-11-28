@@ -88,21 +88,21 @@ class StatDict(Stat, dict):
         """
         Args:
             key_format (str):
-                Format to use for naming the substats, by default this is just `{0}.{1}`.
-                It could be very useful to pass in `{1}.{0}` depending on how you want to organize your stats
+                Format to use for naming the substats, by default this is just `{name}.{key}`.
+                It could be very useful to pass in `{key}.{name}` depending on how you want to organize your stats
             key_func (callable->str):
                 Function called to get the name for substats. Default value is `self.key_format.format`.
                 The function is called with `key_func(statdict_name, key)`
         """
         super(StatDict, self).__init__(*args, **kwargs)
 
-        self.key_format = kwargs.pop('key_format', '{0}.{1}')
+        self.key_format = kwargs.pop('key_format', '{name}.{key}')
         self.key_func = kwargs.pop('key_func', self.key_format.format)
 
     def __missing__(self, key):
 
         default = self._stat_class(
-            self.key_func(self.name, key),
+            self.key_func(name=self.name, key=key),
             self.__doc__,
             prefix=self.prefix,
             client=self.client,
@@ -202,3 +202,4 @@ class DjangoStats(Stats):
         module = importlib.import_module(module_path)
         klass = getattr(module, klass_name)
         return klass
+
