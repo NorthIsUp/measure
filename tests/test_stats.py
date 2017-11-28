@@ -130,6 +130,15 @@ class StatMixinDict(StatMixin):
         stat = statdict['hi']
         assert stat.name == statdict.key_func(name=statdict.name, key='hi')
 
+    def test_object_key_lookup(self, statdict):
+        from collections import namedtuple
+        tup = namedtuple('hi', 'x,y')
+
+        statdict[(1, 2)].apply(1)
+        statdict[2].apply(1)
+        statdict[object()].apply(1)
+        statdict[tup('1', 3)].apply(1)
+
 
 class TestCounterStat(StatMixin):
     stat_class = Counter
