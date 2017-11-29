@@ -18,4 +18,16 @@ class TestStatsdClient(BaseClient):
         pass
 
     def __getattr__(self, item):
-        return TestStatsdClient()
+        return self
+
+    def timing(self, *args, **kwargs):
+        pass
+
+    def update_stats(self, *args, **kwargs):
+        pass
+
+    def gauge(self, *args, **kwargs):
+        pass
+
+    def send(self, *args, **kwargs):
+        pass

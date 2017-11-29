@@ -33,7 +33,7 @@ class Stat(object):
         self.__doc__ = doc
         self.name = name
         self.sample_rate = sample_rate
-        self.parent = parent
+        self.set_parent(parent)
 
         # return a nop function if there is no alias
         self.__alias = getattr(self, self._alias, lambda *args: None)
