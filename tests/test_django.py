@@ -17,14 +17,16 @@ CACHES = {}
 ALLOWED_HOSTS = ['*']
 SECURE_PROXY_SSL_HEADER = ('SSL_ON', '1')
 
-STATSD_HOST='localhost',
-STATSD_PORT='1235',
-STATS_CLIENT=__name__ + '.StatsClient'
+STATSD_HOST = 'localhost',
+STATSD_PORT = '1235',
+STATS_CLIENT = __name__ + '.StatsClient'
 
 stats_client = Mock(spec=BaseClient)
 
+
 def StatsClient(*args, **kwargs):
     return stats_client
+
 
 def test_django_client():
 
@@ -37,4 +39,4 @@ def test_django_client():
 
     stats.ho.mark(5)
 
-    stats.ho.client.update_stats.assert_called_with('hi.ho', 5, sample_rate=1)
+    stats.client.update_stats.assert_called_with('hi.ho', 5, sample_rate=1)

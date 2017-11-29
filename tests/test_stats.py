@@ -23,6 +23,7 @@ from measure import (
     Timer,
     TimerDict,
 )
+from measure.client.base import BaseClient
 from mock import MagicMock
 import pytest
 
@@ -31,9 +32,14 @@ BASE_STATS = frozenset((Stat, StatDict))
 
 
 class ClientTest():
+
     @pytest.fixture
-    def client(self, request):
-        return MagicMock()
+    def client(self):
+        return MagicMock(spec=BaseClient)
+
+    @pytest.fixture
+    def parent(self, client):
+        return Stats('tests_parent_prefix', client=client)
 
 
 class StatMixin(ClientTest):
@@ -44,19 +50,23 @@ class StatMixin(ClientTest):
     stat_name = 'test_stat'
 
     @pytest.fixture
-    def stat(self, client):
+    def stat(self, parent):
         stat = self.stat_class(self.stat_name, 'testing this stat', sample_rate=self.sample_rate)
-        stat.set_client(client)
+        stat.set_parent(parent)
         return stat
 
-    @property
+    @pytest.fixture
+    def expected_stat_name_with_prefix(self, parent, expected_stat_name):
+        return parent.prefix + '.' + expected_stat_name
+
+    @pytest.fixture
     def expected_stat_name(self):
         return '.'.join(k for k in (self.stat_name, str(self.stat_dict_key)) if k)
 
     def assertMockCalledWith(self, mock, *values, **kwvalues):
         mock.assert_called_with(*values, **kwvalues)
 
-    def test___call__(self, client, stat):
+    def test___call__(self, client, stat, expected_stat_name_with_prefix):
         """
         asserts that the client is called with the default function if the
         __call__ method is used.
@@ -65,12 +75,12 @@ class StatMixin(ClientTest):
             stat(1)
             self.assertMockCalledWith(
                 getattr(client, stat._function),
-                self.expected_stat_name,
+                expected_stat_name_with_prefix,
                 1,
                 sample_rate=self.sample_rate
             )
 
-    def test_apply(self, client, stat):
+    def test_apply(self, client, stat, expected_stat_name_with_prefix):
         """
         asserts that apply calls the default function.
         """
@@ -78,18 +88,10 @@ class StatMixin(ClientTest):
             stat.apply(42)
             self.assertMockCalledWith(
                 getattr(client, stat._function),
-                self.expected_stat_name,
+                expected_stat_name_with_prefix,
                 42,
                 sample_rate=self.sample_rate
             )
-
-    def test_set_prefix(self, stat):
-        assert stat.name == self.expected_stat_name
-        assert stat.prefix_name == self.expected_stat_name
-
-        stat.set_prefix('prefix')
-
-        assert stat.prefix_name == 'prefix.' + self.expected_stat_name
 
 
 class StatMixinDict(StatMixin):
@@ -97,9 +99,9 @@ class StatMixinDict(StatMixin):
     stat_dict_key = 200
 
     @pytest.fixture(params=['default', 'key_func', 'key_format'])
-    def statdict(self, request):
+    def statdict(self, request, parent):
         key_type = request.param
-        statdict = partial(self.stat_class, self.stat_name, 'testing this stat', sample_rate=self.sample_rate)
+        statdict = partial(self.stat_class, self.stat_name, 'testing this stat', sample_rate=self.sample_rate, parent=parent)
 
         if key_type == 'default':
             # normal case
@@ -115,14 +117,15 @@ class StatMixinDict(StatMixin):
             # a custom key format is specified
             statdict = statdict(key_format='key_foramt.{name}.{key}')
 
-        self.expected_stat_name = statdict.key_func(name=self.stat_name, key=self.stat_dict_key)
-
         return statdict
 
     @pytest.fixture
-    def stat(self, statdict, client):
+    def expected_stat_name(self, statdict):
+        return statdict.key_func(name=self.stat_name, key=self.stat_dict_key)
+
+    @pytest.fixture
+    def stat(self, statdict):
         stat = statdict[self.stat_dict_key]
-        stat.set_client(client)
         return stat
 
     def test_key_func_and_key_format(self, statdict):
@@ -143,60 +146,60 @@ class StatMixinDict(StatMixin):
 class TestCounterStat(StatMixin):
     stat_class = Counter
 
-    def test_increment(self, client, stat):
+    def test_increment(self, client, stat, expected_stat_name_with_prefix):
         stat.increment()
-        self.assertMockCalledWith(client.update_stats, self.expected_stat_name, 1, sample_rate=self.sample_rate)
+        self.assertMockCalledWith(client.update_stats, expected_stat_name_with_prefix, 1, sample_rate=self.sample_rate)
 
-    def test_increment_n(self, client, stat):
+    def test_increment_n(self, client, stat, expected_stat_name_with_prefix):
         stat.increment(5)
-        self.assertMockCalledWith(client.update_stats, self.expected_stat_name, 5, sample_rate=self.sample_rate)
+        self.assertMockCalledWith(client.update_stats, expected_stat_name_with_prefix, 5, sample_rate=self.sample_rate)
 
-    def test_decrement(self, client, stat):
+    def test_decrement(self, client, stat, expected_stat_name_with_prefix):
         if self.stat_class in (Meter, MeterDict):
             with pytest.raises(NotImplementedError):
                 stat.decrement()
         else:
             stat.decrement()
-            self.assertMockCalledWith(client.update_stats, self.expected_stat_name, -1,
+            self.assertMockCalledWith(client.update_stats, expected_stat_name_with_prefix, -1,
                                       sample_rate=self.sample_rate)
 
-    def test_decrement_n(self, client, stat):
+    def test_decrement_n(self, client, stat, expected_stat_name_with_prefix):
         if self.stat_class in (Meter, MeterDict):
             with pytest.raises(NotImplementedError):
                 stat.decrement(5)
         else:
             stat.decrement(5)
-            self.assertMockCalledWith(client.update_stats, self.expected_stat_name, -5,
+            self.assertMockCalledWith(client.update_stats, expected_stat_name_with_prefix, -5,
                                       sample_rate=self.sample_rate)
 
-    def test___add__(self, client, stat):
+    def test___add__(self, client, stat, expected_stat_name_with_prefix):
         stat += 42
-        self.assertMockCalledWith(client.update_stats, self.expected_stat_name, 42, sample_rate=self.sample_rate)
+        self.assertMockCalledWith(client.update_stats, expected_stat_name_with_prefix, 42, sample_rate=self.sample_rate)
 
-    def test___add__zero(self, client, stat):
+    def test___add__zero(self, client, stat, expected_stat_name_with_prefix):
         stat += 0
-        self.assertMockCalledWith(client.update_stats, self.expected_stat_name, 0, sample_rate=self.sample_rate)
+        self.assertMockCalledWith(client.update_stats, expected_stat_name_with_prefix, 0, sample_rate=self.sample_rate)
 
-    def test___add__small(self, client, stat):
+    def test___add__small(self, client, stat, expected_stat_name_with_prefix):
         stat += 0.1
-        self.assertMockCalledWith(client.update_stats, self.expected_stat_name, 0.1, sample_rate=self.sample_rate)
+        self.assertMockCalledWith(client.update_stats, expected_stat_name_with_prefix, 0.1, sample_rate=self.sample_rate)
 
-    def test___add__neg(self, client, stat):
+    def test___add__neg(self, client, stat, expected_stat_name_with_prefix):
         if self.stat_class in (Meter, MeterDict):
             with pytest.raises(NotImplementedError):
                 stat += -42
         else:
             stat += -42
-            self.assertMockCalledWith(client.update_stats, self.expected_stat_name, -42,
+            self.assertMockCalledWith(client.update_stats, expected_stat_name_with_prefix, -42,
                                       sample_rate=self.sample_rate)
 
-    def test___sub__(self, client, stat):
+    def test___sub__(self, client, stat, expected_stat_name_with_prefix):
         if self.stat_class in (Meter, MeterDict):
             with pytest.raises(NotImplementedError):
                 stat -= 42
         else:
             stat -= 42
-            self.assertMockCalledWith(client.update_stats, self.expected_stat_name, -42,
+            self.assertMockCalledWith(client.update_stats, expected_stat_name_with_prefix, -42,
                                       sample_rate=self.sample_rate)
 
 
@@ -215,13 +218,13 @@ class TestCounterSampleRateDict(StatMixinDict, TestCounterSampleRate):
 class TestMeterStat(TestCounterStat):
     stat_class = Meter
 
-    def test_mark(self, client, stat):
+    def test_mark(self, client, stat, expected_stat_name_with_prefix):
         stat.mark()
-        self.assertMockCalledWith(client.update_stats, self.expected_stat_name, 1, sample_rate=self.sample_rate)
+        self.assertMockCalledWith(client.update_stats, expected_stat_name_with_prefix, 1, sample_rate=self.sample_rate)
 
-    def test_mark_n(self, client, stat):
+    def test_mark_n(self, client, stat, expected_stat_name_with_prefix):
         stat.mark(5)
-        self.assertMockCalledWith(client.update_stats, self.expected_stat_name, 5, sample_rate=self.sample_rate)
+        self.assertMockCalledWith(client.update_stats, expected_stat_name_with_prefix, 5, sample_rate=self.sample_rate)
 
 
 class TestMeterStatDict(StatMixinDict, TestMeterStat):
@@ -286,9 +289,9 @@ class TestTimerStatSampleRateDict(StatMixinDict, TestTimerStatSampleRate):
 class TestGaugeStat(StatMixin):
     stat_class = Gauge
 
-    def test_gauge(self, client, stat):
+    def test_gauge(self, client, stat, expected_stat_name_with_prefix):
         stat.set(42)
-        self.assertMockCalledWith(client.gauge, self.expected_stat_name, 42, sample_rate=self.sample_rate)
+        self.assertMockCalledWith(client.gauge, expected_stat_name_with_prefix, 42, sample_rate=self.sample_rate)
 
 
 class TestGaugeStatDict(StatMixinDict, TestGaugeStat):

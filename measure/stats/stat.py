@@ -22,23 +22,21 @@ class Stat(object):
     _function = ''
     _alias = ''
 
-    def __init__(self, name, doc, prefix=None, client=None, sample_rate=1, *args, **kwargs):
+    def __init__(self, name, doc, parent=None, sample_rate=1, *args, **kwargs):
         """
         :param str name: the name the stat will report under.
         :param str doc: a human readable description of the stat.
         :param str prefix: a prefix for the stat to report with e.g. hostname.
-        :param Client client: the statsd client.
+        :param Stats parent: the stats container.
         :param float sample_rate: the rate the stat is being sampled at.
         """
         self.__doc__ = doc
         self.name = name
         self.sample_rate = sample_rate
+        self.parent = parent
 
         # return a nop function if there is no alias
         self.__alias = getattr(self, self._alias, lambda *args: None)
-
-        self.set_client(client)
-        self.set_prefix(prefix)
 
     def __call__(self, *args, **kwargs):
         """
@@ -53,29 +51,14 @@ class Stat(object):
         """
         self.__alias(*args, **kwargs)
 
-    def set_client(self, client):
-        """
-        Set the statsd client.
-        """
-        self.client = client
-
-    def set_prefix(self, prefix):
-        """
-        Set a prefix for reporting stats.
-        """
-        self.prefix = prefix or ''
-        self.prefix_name = ((self.prefix + '.') if self.prefix else '') + self.name
+    def set_parent(self, parent):
+        self.parent = parent
 
     def apply(self, value):
         """
         Apply a statsd function to a value
         """
-        func = getattr(self.client, self._function, None)
-
-        if func:
-            func(self.prefix_name, value, sample_rate=self.sample_rate)
-        else:
-            logger.error('stat %s does not have function %s', self.prefix_name, self._function)
+        self.parent.apply(self, value)
 
 
 class StatDict(Stat, dict):
@@ -104,8 +87,7 @@ class StatDict(Stat, dict):
         default = self._stat_class(
             self.key_func(name=self.name, key=key),
             self.__doc__,
-            prefix=self.prefix,
-            client=self.client,
+            parent=self.parent,
             sample_rate=self.sample_rate,
         )
 
@@ -152,8 +134,7 @@ class Stats(object):
             self.add_stat(stat)
 
     def add_stat(self, stat):
-        stat.set_client(self.client)
-        stat.set_prefix(self.prefix)
+        stat.set_parent(self)
         setattr(self, stat.name, stat)
 
     def __getitem__(self, key):
@@ -162,6 +143,16 @@ class Stats(object):
     def __getattr__(self, key):
         from measure.stats import FakeStat
         return FakeStat(key, 'the best laid plans often go astray', prefix=self.prefix)
+
+    def apply(self, stat, value):
+        func = getattr(self.client, stat._function, None)
+
+        name = self.prefix + '.' + stat.name
+
+        if func:
+            func(name, value, sample_rate=stat.sample_rate)
+        else:
+            logger.error('stat %s does not have function %s', name, stat._function)
 
 
 class DjangoStats(Stats):
@@ -202,4 +193,3 @@ class DjangoStats(Stats):
         module = importlib.import_module(module_path)
         klass = getattr(module, klass_name)
         return klass
-

@@ -34,8 +34,7 @@ class FakeStat(Timer, Meter, Counter, Gauge, TimerDict, CounterDict, GaugeDict):
     # Meter must precede Counter for the MRO to resolve
 
     def apply(self, *args, **kwargs):
-        logger.error('stat <%s> does not exist', self.prefix_name)
-
+        logger.error('stat <%s> does not exist', self.name)
 
     def decrement(self, *args, **kwargs):
         """
