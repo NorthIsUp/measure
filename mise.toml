@@ -1,0 +1,91 @@
+[tools]
+python     = "3.13"
+uv         = "latest"
+ruff       = "latest"
+pre-commit = "latest"
+
+[settings]
+experimental = true
+
+[env]
+UV_PREVIEW = "1"
+
+[tasks.sync]
+description = "Sync uv environment"
+run         = "uv sync --all-extras"
+
+[tasks.test]
+description = "Run tests"
+run         = "uv run pytest"
+
+[tasks.lint]
+description = "Run ruff lint and format checks"
+run = """#!/usr/bin/env bash
+set -euo pipefail
+ruff check .
+ruff format --check .
+"""
+
+[tasks.fmt]
+description = "Format code with ruff"
+run = """#!/usr/bin/env bash
+set -euo pipefail
+ruff check --fix .
+ruff format .
+"""
+
+[tasks.typecheck]
+description = "Run pyright type checker"
+run         = "uv run pyright measure"
+
+[tasks.build]
+description = "Build sdist and wheel into dist/"
+run         = "uv build --out-dir dist"
+
+[tasks.current-version]
+description = "Print the current local package version"
+run         = "uv version --short"
+
+[tasks.published-version]
+description = "Print the latest version published to PyPI"
+run = """#!/usr/bin/env bash
+uvx get_pypi_latest_version measure 2>/dev/null || echo "none"
+"""
+
+[tasks.bump-patch]
+description = "Bump the patch version"
+run         = "uv version --bump patch"
+
+[tasks.bump-minor]
+description = "Bump the minor version"
+run         = "uv version --bump minor"
+
+[tasks.bump-major]
+description = "Bump the major version"
+run         = "uv version --bump major"
+
+[tasks.publish]
+description = "Build and publish the current version to PyPI if it isn't already there"
+run = """#!/usr/bin/env bash
+set -euo pipefail
+local_version=$(uv version --short)
+published_version=$(uvx get_pypi_latest_version measure 2>/dev/null || echo "none")
+
+echo "local:     $local_version"
+echo "published: $published_version"
+
+if [ "$local_version" = "$published_version" ]; then
+    echo "✓ measure $local_version is already on PyPI, nothing to do"
+    exit 0
+fi
+
+rm -rf dist
+uv build --out-dir dist
+uv publish dist/*
+"""
+
+[tasks.clean]
+description = "Remove build artefacts and caches"
+run = """#!/usr/bin/env bash
+rm -rf dist .venv .pytest_cache .ruff_cache build *.egg-info
+"""

@@ -8,6 +8,6 @@ from .pystatsd import PyStatsdClient
 from .test import TestStatsdClient
 
 # remove clients that don't exist
-for name, client in globals().items():
+for name, client in list(globals().items()):
     if isinstance(client, type) and issubclass(client, NotImplementedError):
-        del name
+        del globals()[name]

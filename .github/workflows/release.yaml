@@ -1,0 +1,95 @@
+name: Release
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - pyproject.toml
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    # PyPI trusted publishing (recommended). Configure at:
+    #   https://pypi.org/manage/account/publishing/
+    # Project name: measure  Workflow: release.yaml  Environment: pypi
+    environment:
+      name: pypi
+      url: https://pypi.org/p/measure
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: jdx/mise-action@v2
+        with:
+          experimental: true
+
+      - name: version info
+        id: ver
+        run: |
+          set -euo pipefail
+          local_version=$(uv version --short)
+          published_version=$(uvx get_pypi_latest_version measure 2>/dev/null || echo "none")
+          echo "local=$local_version" >> "$GITHUB_OUTPUT"
+          echo "published=$published_version" >> "$GITHUB_OUTPUT"
+          echo "measure: local=$local_version published=$published_version"
+
+      - name: skip if already published
+        if: steps.ver.outputs.local == steps.ver.outputs.published
+        run: echo "::notice::measure ${{ steps.ver.outputs.local }} already on PyPI — skipping"
+
+      - name: build
+        if: steps.ver.outputs.local != steps.ver.outputs.published
+        run: uv build --out-dir dist
+
+      - name: publish (trusted publishing via OIDC)
+        if: steps.ver.outputs.local != steps.ver.outputs.published
+        run: uv publish dist/*
+
+      - name: verify
+        if: steps.ver.outputs.local != steps.ver.outputs.published
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 60); do
+            got=$(uvx get_pypi_latest_version measure 2>/dev/null || echo "")
+            if [ "$got" = "${{ steps.ver.outputs.local }}" ]; then
+              echo "::notice::published measure ${{ steps.ver.outputs.local }}"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::warning::did not see measure ${{ steps.ver.outputs.local }} on PyPI after 120s"
+
+      - name: tag release
+        if: steps.ver.outputs.local != steps.ver.outputs.published
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="v${{ steps.ver.outputs.local }}"
+          if git rev-parse "$tag" >/dev/null 2>&1; then
+            echo "tag $tag already exists, skipping"
+            exit 0
+          fi
+          git tag "$tag"
+          git push origin "$tag"
+
+      - name: create github release
+        if: steps.ver.outputs.local != steps.ver.outputs.published
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="v${{ steps.ver.outputs.local }}"
+          gh release create "$tag" \
+            --title "$tag" \
+            --generate-notes \
+            dist/* || echo "::warning::release creation failed"

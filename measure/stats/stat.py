@@ -120,7 +120,7 @@ class Stats(object):
 
         client = kwargs.pop('client', None)
 
-        if not isinstance(prefix, basestring):
+        if not isinstance(prefix, str):
             raise TypeError("first argument must be a prefix string")
 
         if not isinstance(client, BaseClient):
