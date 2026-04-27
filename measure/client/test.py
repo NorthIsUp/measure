@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
+from __future__ import annotations
 
-from __future__ import absolute_import
+from typing import Any, Self
 
-# External Libraries
 from measure.client.base import BaseClient
 
 
@@ -11,23 +10,23 @@ class TestStatsdClient(BaseClient):
     Client for testing with that does not use sockets
     """
 
-    def __init__(*args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         pass
 
-    def __call__(*args, **kwargs):
+    def __call__(self, *args: Any, **kwargs: Any) -> None:
         pass
 
-    def __getattr__(self, item):
+    def __getattr__(self, item: str) -> Self:
         return self
 
-    def timing(self, *args, **kwargs):
+    def timing(self, *args: Any, **kwargs: Any) -> None:
         pass
 
-    def update_stats(self, *args, **kwargs):
+    def update_stats(self, *args: Any, **kwargs: Any) -> None:
         pass
 
-    def gauge(self, *args, **kwargs):
+    def gauge(self, *args: Any, **kwargs: Any) -> None:
         pass
 
-    def send(self, *args, **kwargs):
+    def send(self, *args: Any, **kwargs: Any) -> None:
         pass

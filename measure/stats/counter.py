@@ -1,11 +1,8 @@
-# -*- coding: utf-8 -*-
+from __future__ import annotations
 
-from __future__ import absolute_import
+from typing import ClassVar
 
-from .stat import (
-    Stat,
-    StatDict,
-)
+from .stat import Stat, StatDict
 
 
 class Counter(Stat):
@@ -13,22 +10,22 @@ class Counter(Stat):
     A stat that represents a count over time.
     """
 
-    _function = 'update_stats'
-    _alias = 'increment'
+    _function: ClassVar[str] = "update_stats"
+    _alias: ClassVar[str] = "increment"
 
-    def __add__(self, n):
+    def __add__(self, n: float) -> None:
         """
         >>> stat += 42
         """
         self.increment(n)
 
-    def __sub__(self, n):
+    def __sub__(self, n: float) -> None:
         """
         >>> stat -= 42
         """
         self.decrement(n)
 
-    def increment(self, n=1):
+    def increment(self, n: float = 1) -> None:
         """
         >>> stat.increment(42)
         >>> stat.increment(-42) # will decriment the value
@@ -38,7 +35,7 @@ class Counter(Stat):
         else:
             self.apply(n)
 
-    def decrement(self, n=1):
+    def decrement(self, n: float = 1) -> None:
         """
         >>> stat.decrement(42)
         >>> stat.decrement(-42) # has the same effect
@@ -47,4 +44,4 @@ class Counter(Stat):
 
 
 class CounterDict(StatDict):
-    _stat_class = Counter
+    _stat_class: ClassVar[type[Stat]] = Counter
