@@ -22,16 +22,16 @@ run         = "uv run pytest"
 description = "Run ruff lint and format checks"
 run = """#!/usr/bin/env bash
 set -euo pipefail
-ruff check .
-ruff format --check .
+uv run ruff check .
+uv run ruff format --check .
 """
 
 [tasks.fmt]
 description = "Format code with ruff"
 run = """#!/usr/bin/env bash
 set -euo pipefail
-ruff check --fix .
-ruff format .
+uv run ruff check --fix .
+uv run ruff format .
 """
 
 [tasks.typecheck]

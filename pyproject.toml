@@ -3,7 +3,7 @@ name = "measure"
 version = "0.5.1"
 description = "A metrics library that allows the user to swap metrics provider (statsd, cloudwatch, etc.) and provides an abstraction for creating metrics."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.13"
 license = { text = "MIT" }
 authors = [
     { name = "Adam Hitchcock", email = "adam@northisup.com" },
@@ -15,10 +15,8 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: System :: Monitoring",
 ]
@@ -62,7 +60,7 @@ dev = [
 [tool.ruff]
 line-length = 140
 preview = true
-target-version = "py310"
+target-version = "py313"
 extend-exclude = ["**/examples/**"]
 # specific rules to enable
 lint.extend-select = [
@@ -89,14 +87,7 @@ lint.extend-select = [
 lint.ignore = [
     "A002",    # Function argument {name} is shadowing a Python builtin
     "A005",    # Module {name} shadows a Python standard-library module
-    "ANN001",  # Missing type annotation — strict; too many existing
-    "ANN002",  # Missing type annotation for *args
-    "ANN003",  # Missing type annotation for **kwargs
-    "ANN201",  # Missing return type annotation
-    "ANN202",  # Missing return type annotation for private function
-    "ANN204",  # Missing return type annotation for special method
-    "ANN205",  # Missing return type annotation for staticmethod
-    "ANN401",  # any-type
+    "ANN401",  # any-type — explicit Any is sometimes correct
     "BLE001",  # Blind Exception
     "COM812",  # Trailing comma missing
     "COM819",  # prohibited-trailing-comma
@@ -162,26 +153,27 @@ venvPath = "."
 exclude = [
     "**/__pycache__",
     "**/.venv",
+    "tests",
 ]
-pythonVersion = "3.10"
+pythonVersion = "3.13"
 reportConstantRedefinition = "error"
 reportDeprecated = "warning"
 reportDuplicateImport = "error"
-reportImportCycles = "warning"
+reportImportCycles = "none"
 reportIncompatibleMethodOverride = "error"
 reportInconsistentConstructor = "warning"
 reportInvalidTypeVarUse = "error"
 reportMatchNotExhaustive = "warning"
-reportMissingImports = "warning"
+reportMissingImports = "error"
 reportMissingModuleSource = "warning"
 reportMissingTypeStubs = false
 reportPrivateImportUsage = "error"
 reportSelfClsParameterName = "error"
 reportUnnecessaryTypeIgnoreComment = "warning"
-reportUntypedBaseClass = "warning"
-reportUntypedClassDecorator = "warning"
+reportUntypedBaseClass = "error"
+reportUntypedClassDecorator = "error"
 reportUntypedFunctionDecorator = "warning"
-reportUnusedImport = "warning"
+reportUnusedImport = "error"
 strictDictionaryInference = true
 strictListInference = true
 strictSetInference = true
