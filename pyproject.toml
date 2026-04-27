@@ -95,6 +95,7 @@ lint.ignore = [
     "ANN201",  # Missing return type annotation
     "ANN202",  # Missing return type annotation for private function
     "ANN204",  # Missing return type annotation for special method
+    "ANN205",  # Missing return type annotation for staticmethod
     "ANN401",  # any-type
     "BLE001",  # Blind Exception
     "COM812",  # Trailing comma missing
@@ -102,6 +103,7 @@ lint.ignore = [
     "E501",    # line too long
     "E741",    # Ambiguous variable name
     "N806",    # Variable in function should be lowercase
+    "N816",    # mixedCase variable in global scope (used for fallback import aliases)
     "N999",    # Invalid module name
     "PLR0911", # too many return statements for method
     "PLR0912", # too many branches
@@ -114,8 +116,10 @@ lint.ignore = [
     "PLR6301", # could be a function, class method, or static method
     "RET504",  # Unnecessary assignment to {name} before return statement
     "RUF001",  # Ambiguous unicode characters in strings
+    "RUF067",  # __init__ module should only contain docstrings and re-exports
     "TC006",   # Type checking: Add quotes to type expression in typing.cast()
     "TC007",   # Type checking: Add quotes to type alias
+    "TRY002",  # Create your own exception
     "TRY401",  # Redundant exception object in logging.exception
     "UP009",   # UTF-8 encoding declaration is unnecessary
 ]
@@ -131,7 +135,7 @@ lint.extend-safe-fixes = [
 lint.future-annotations = true
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["ANN", "PLR", "S101"]
+"tests/**" = ["ANN", "PLR", "S101", "N802", "COM818"]
 
 [tool.pyproject-fmt]
 column_width = 1          # always wrap lists

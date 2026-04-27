@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
 
 # Standard Library
 import logging
@@ -15,12 +14,18 @@ from .gauge import (
 )
 from .meter import (
     Meter,
-    MeterDict,
+)
+from .meter import (
+    MeterDict as MeterDict,
 )
 from .stat import (
-    Stat,
-    StatDict,
-    Stats,
+    Stat as Stat,
+)
+from .stat import (
+    StatDict as StatDict,
+)
+from .stat import (
+    Stats as Stats,
 )
 from .timer import (
     Timer,
@@ -34,7 +39,7 @@ class FakeStat(Timer, Meter, Counter, Gauge, TimerDict, CounterDict, GaugeDict):
     # Meter must precede Counter for the MRO to resolve
 
     def apply(self, *args, **kwargs):
-        logger.error('stat <%s> does not exist', self.name)
+        logger.error("stat <%s> does not exist", self.name)
 
     def decrement(self, *args, **kwargs):
         """

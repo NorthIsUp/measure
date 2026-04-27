@@ -11,11 +11,8 @@ Measure is a metrics library that allows the user to swap metrics provider ie. (
 
 ```python
 import measure
-stat = measure.stats.Stats(
-    "homepage",
-    measure.Meter("pageviews", "Pageview on homepage"),
-    client=measure.client.PyStatsdClient()
-)
+
+stat = measure.stats.Stats("homepage", measure.Meter("pageviews", "Pageview on homepage"), client=measure.client.PyStatsdClient())
 
 stat.pageviews.mark()
 ```

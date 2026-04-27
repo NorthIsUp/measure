@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
 
 from .stat import (
     Stat,
@@ -13,8 +12,8 @@ class Counter(Stat):
     A stat that represents a count over time.
     """
 
-    _function = 'update_stats'
-    _alias = 'increment'
+    _function = "update_stats"
+    _alias = "increment"
 
     def __add__(self, n):
         """

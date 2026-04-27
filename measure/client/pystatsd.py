@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
 
 # External Libraries
 from measure.client.base import BaseClient
@@ -12,8 +11,7 @@ except ImportError:
 
 
 class PyStatsdClient(BaseClient):
-
-    def __init__(self, host='localhost', port=8125, prefix=None):
+    def __init__(self, host="localhost", port=8125, prefix=None):
         self.client = pystatsd_Client(host, port, prefix)
 
     def timing(self, *args, **kwargs):

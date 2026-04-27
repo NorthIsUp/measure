@@ -1,6 +1,4 @@
-
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
 
 # Standard Library
 from logging import getLogger
@@ -8,19 +6,18 @@ from logging import getLogger
 # External Libraries
 from measure.client.base import BaseClient
 
-
 logger = getLogger(__name__)
 
 
-class Stat(object):
+class Stat:
     """
     Base stat object.
     """
 
     # XXX: make an ABC
 
-    _function = ''
-    _alias = ''
+    _function = ""
+    _alias = ""
 
     def __init__(self, name, doc, parent=None, sample_rate=1, *args, **kwargs):
         """
@@ -65,6 +62,7 @@ class StatDict(Stat, dict):
     """
     Allows for a dictionary of a specific stat type.
     """
+
     _stat_class = Stat
 
     def __init__(self, *args, **kwargs):
@@ -77,10 +75,10 @@ class StatDict(Stat, dict):
                 Function called to get the name for substats. Default value is `self.key_format.format`.
                 The function is called with `key_func(statdict_name, key)`
         """
-        super(StatDict, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
-        self.key_format = kwargs.pop('key_format', '{name}.{key}')
-        self.key_func = kwargs.pop('key_func', self.key_format.format)
+        self.key_format = kwargs.pop("key_format", "{name}.{key}")
+        self.key_func = kwargs.pop("key_func", self.key_format.format)
 
     def __missing__(self, key):
 
@@ -95,7 +93,7 @@ class StatDict(Stat, dict):
         return default
 
 
-class Stats(object):
+class Stats:
     """
     example usage:
         >>> stats = Stats(
@@ -118,16 +116,16 @@ class Stats(object):
 
     def __init__(self, prefix, *stats, **kwargs):
 
-        client = kwargs.pop('client', None)
+        client = kwargs.pop("client", None)
 
         if not isinstance(prefix, str):
             raise TypeError("first argument must be a prefix string")
 
         if not isinstance(client, BaseClient):
-            raise TypeError('the client should be an instance of BaseClient')
+            raise TypeError("the client should be an instance of BaseClient")
 
         self.client = client
-        self.prefix = prefix or ''
+        self.prefix = prefix or ""
         self.stats = stats
 
         for stat in stats:
@@ -142,17 +140,18 @@ class Stats(object):
 
     def __getattr__(self, key):
         from measure.stats import FakeStat
-        return FakeStat(key, 'the best laid plans often go astray', prefix=self.prefix)
+
+        return FakeStat(key, "the best laid plans often go astray", prefix=self.prefix)
 
     def apply(self, stat, value):
         func = getattr(self.client, stat._function, None)
 
-        name = self.prefix + '.' + stat.name
+        name = self.prefix + "." + stat.name
 
         if func:
             func(name, value, sample_rate=stat.sample_rate)
         else:
-            logger.error('stat %s does not have function %s', name, stat._function)
+            logger.error("stat %s does not have function %s", name, stat._function)
 
 
 class DjangoStats(Stats):
@@ -165,18 +164,18 @@ class DjangoStats(Stats):
             STATSD_HOST the host for the client to connect to
             STATSD_PORT the port for the client to connect to
         """
-        _client = kwargs.get('client')
+        client = kwargs.get("client")
 
-        if not _client:
+        if not client:
             from django.conf import settings
 
-            host = kwargs.get('host') or settings.STATSD_HOST
-            port = kwargs.get('port') or settings.STATSD_PORT
+            host = kwargs.get("host") or settings.STATSD_HOST
+            port = kwargs.get("port") or settings.STATSD_PORT
 
             client_class = self.import_class(settings.STATS_CLIENT)
-            kwargs['client'] = client_class(host, port)
+            kwargs["client"] = client_class(host, port)
 
-        super(DjangoStats, self).__init__(prefix, *args, **kwargs)
+        super().__init__(prefix, *args, **kwargs)
 
     @staticmethod
     def import_class(klass_path):
@@ -189,7 +188,7 @@ class DjangoStats(Stats):
         """
         import importlib
 
-        module_path, klass_name = klass_path.rsplit('.', 1)
+        module_path, klass_name = klass_path.rsplit(".", 1)
         module = importlib.import_module(module_path)
         klass = getattr(module, klass_name)
         return klass

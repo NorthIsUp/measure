@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
 
 # Standard Library
 from contextlib import contextmanager
@@ -16,8 +15,9 @@ class Timer(Stat):
     """
     Time based stat that is usable via direct call, decorator, or context manager
     """
-    _function = 'timing'
-    _alias = 'time'
+
+    _function = "timing"
+    _alias = "time"
 
     def time(self, *args):
         """
